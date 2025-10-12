@@ -4,9 +4,9 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>ru.velialcult.anarchyregions</groupId>
-    <artifactId>CultAnarchyRegions</artifactId>
-    <version>1.0.1.1-BUG-FIX</version>
+    <groupId>ru.nilsson03.anarchyregions</groupId>
+    <artifactId>anarchyregions</artifactId>
+    <version>2.0.0-DEV</version>
 
     <properties>
         <maven.compiler.source>16</maven.compiler.source>
@@ -27,6 +27,45 @@
                     <source>16</source>
                     <target>16</target>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>3.5.1</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                        <configuration>
+                            <shadedArtifactAttached>true</shadedArtifactAttached>
+                            <shadedClassifierName>shaded</shadedClassifierName>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <version>3.1.0</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <target>
+                                <copy
+                                        file="${project.build.directory}/${project.artifactId}-${project.version}.jar"
+                                        todir="D:/Minecraft Develop/Test plugins/plugins"
+                                />
+                            </target>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
         <resources>
@@ -57,6 +96,11 @@
         <repository>
             <id>jitpack.io</id>
             <url>https://jitpack.io</url>
+        </repository>
+        <!-- CodeMC Repository for item-nbt-api -->
+        <repository>
+            <id>codemc-repo</id>
+            <url>https://repo.codemc.org/repository/maven-public/</url>
         </repository>
     </repositories>
 
@@ -94,13 +138,8 @@
         </dependency>
         <dependency>
             <groupId>ru.nilsson03</groupId>
-            <artifactId>questlibrary</artifactId>
-            <version>1.0-RELEASE</version>
-        </dependency>
-        <dependency>
-            <groupId>ru.nilsson03</groupId>
             <artifactId>baselibrary</artifactId>
-            <version>1.2.3-BUG-FIXES</version>
+            <version>1.2.5-DEV</version>
         </dependency>
         <dependency>
             <groupId>org.spigotmc</groupId>
@@ -108,6 +147,12 @@
             <version>1.16.5-R0.1-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
+        <dependency>
+		    <groupId>org.projectlombok</groupId>
+		    <artifactId>lombok</artifactId>
+		    <version>1.18.36</version>
+		    <scope>provided</scope>
+	    </dependency>
     </dependencies>
 
 </project>
