@@ -1,0 +1,8 @@
+main: ru.nilsson03.anarchyregions.AnarchyRegions
+api-version: 1.16
+version: '${project.version}'
+name: AnarchyRegions
+authors:
+  - Nilsson03
+depend:
+  - BaseLibrary

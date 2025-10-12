@@ -1,0 +1,6 @@
+properties:
+  key: example
+  display-name: Example
+  block-type: STONE
+  durability: 100
+  radius: 10

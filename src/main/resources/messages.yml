@@ -1,0 +1,4 @@
+messages:
+  region_already_exists: "&cThis region already exists!"
+  region_already_owned: "&cThis region is already owned by you!"
+  region_created: "&aRegion created successfully!"
