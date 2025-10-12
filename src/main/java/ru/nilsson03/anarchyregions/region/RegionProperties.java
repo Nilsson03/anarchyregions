@@ -1,4 +1,4 @@
-package ru.nilsson.anarchyregions.region;
+package ru.nilsson03.anarchyregions.region;
 
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
