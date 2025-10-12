@@ -1,4 +1,4 @@
-package ru.nilsson.anarchyregions.region;
+package ru.nilsson03.anarchyregions.region;
 
 import java.util.UUID;
 
@@ -17,6 +17,7 @@ import ru.nilsson03.library.bukkit.util.loc.LocationUtil;
 @Getter
 public class Region {
 
+    private final UUID regionId;
     private final Location centerLocation;
     private final Cuboid regionTerritory;
     private final UUID regionOwner;
@@ -26,7 +27,7 @@ public class Region {
     private int durability;
 
     public Region(Location centerLocation, UUID regionOwner, RegionProperties regionProperties) {
-
+        this.regionId = UUID.randomUUID();
         int regionRadius = regionProperties.getRadius();
         World world = centerLocation.getWorld();
 
@@ -51,7 +52,8 @@ public class Region {
         this.blockType = regionProperties.getBlockType();
     }
 
-    public Region(BukkitConfig config) {
+    public Region(UUID regionId, BukkitConfig config) {
+        this.regionId = regionId;
         this.centerLocation = LocationUtil.stringToLocation(config.getString("center"));
         Location locationOne = LocationUtil.stringToLocation(config.getString("territory.one"));
         Location locationTwo = LocationUtil.stringToLocation(config.getString("territory.two"));
