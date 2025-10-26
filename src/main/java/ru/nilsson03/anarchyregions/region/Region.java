@@ -2,6 +2,7 @@ package ru.nilsson03.anarchyregions.region;
 
 import java.util.UUID;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -10,9 +11,12 @@ import org.bukkit.util.Vector;
 
 import lombok.Getter;
 import lombok.Setter;
+import ru.nilsson03.anarchyregions.event.RegionDestroyEvent;
+import ru.nilsson03.anarchyregions.properties.RegionProperties;
 import ru.nilsson03.library.bukkit.file.configuration.BukkitConfig;
 import ru.nilsson03.library.bukkit.util.loc.Cuboid;
 import ru.nilsson03.library.bukkit.util.loc.LocationUtil;
+import ru.nilsson03.library.bukkit.util.log.ConsoleLogger;
 
 @Getter
 public class Region {
@@ -63,8 +67,33 @@ public class Region {
         this.blockType = Material.getMaterial(config.getString("block-type"));
     }
 
-    public void destroy() {
+    public void decrementDurability() {
+        this.durability--;
+        ConsoleLogger.debug("anarchyregions", "Durability of region %s decremented to %d", regionId, durability);
+        if (this.durability <= 0) {
+
+            boolean destroy = destroy();
+
+            if (!destroy) {
+                ConsoleLogger.info("anarchyregions", "Region %s destruction cancelled, durability restored", regionId);
+                this.durability = 1; 
+                return;
+            }
+            
+            ConsoleLogger.info("anarchyregions", "Region %s destroyed due to durability reaching 0", regionId);
+        }
+    }
+
+    public boolean destroy() {
+        RegionDestroyEvent event = new RegionDestroyEvent(this, centerLocation);
+        Bukkit.getPluginManager().callEvent(event);
+
+        if (event.isCancelled()) {
+            return false;
+        }
+        
         Block block = centerLocation.getBlock();
         block.setType(Material.AIR);
+        return true;
     }
 }
