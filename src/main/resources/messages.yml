@@ -2,3 +2,6 @@ messages:
   region_already_exists: "&cThis region already exists!"
   region_already_owned: "&cThis region is already owned by you!"
   region_created: "&aRegion created successfully!"
+  region_not_owner: "&cYou are not the owner of this region!"
+  region_overlap: "&cThis region overlaps with another region!"
+  region_destroyed: "&aRegion destroyed successfully!"

@@ -1,6 +1,11 @@
 properties:
   key: example
-  display-name: Example
+  name: "Example"
   block-type: STONE
   durability: 100
   radius: 10
+  hologram-lines:
+    - "&fRegion: &a{displayName}"
+    - "&fDurability: &a{durability}"
+    - "&fRadius: &a{radius}"
+    - "&fOwner: &a{owner}"

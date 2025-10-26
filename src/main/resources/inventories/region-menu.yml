@@ -1,0 +1,21 @@
+region-menu:
+  structure:
+    - '. . . . i . . . .'
+    - '. . . . . . . . .'
+    - '. . . . . . . . .'
+    - '. . . . . . . . .'
+  title: "Настройка региона"
+  items:
+    custom: 
+      info: 
+        update: true
+        position: i
+        name: "&#0098FFИнформация"
+        lore: 
+          - '&r'
+          - '&r &#0098FF&n▌ &fТекущий радиус региона &#FFFABC{radius}x{radius}'
+          - '&r &#0098FF&n▌ &fТип региона &#0098FF{displayName}'
+          - '&r'
+        type: "material"
+        material: "BOOK"
+        head-id: ""
