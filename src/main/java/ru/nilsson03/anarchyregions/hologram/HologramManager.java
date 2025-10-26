@@ -5,7 +5,6 @@ import java.util.Map;
 import java.util.Random;
 import java.util.UUID;
 
-import org.bukkit.Location;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 
@@ -20,9 +19,7 @@ import ru.nilsson03.anarchyregions.properties.PropertiesStorage;
 import ru.nilsson03.anarchyregions.properties.RegionProperties;
 import ru.nilsson03.anarchyregions.region.Region;
 import ru.nilsson03.library.bukkit.file.configuration.ParameterFile;
-import ru.nilsson03.library.bukkit.util.loc.LocationUtil;
 import ru.nilsson03.library.bukkit.util.log.ConsoleLogger;
-import ru.nilsson03.library.text.api.UniversalTextApi;
 import ru.nilsson03.library.text.util.ReplaceData;
 
 import java.util.HashMap;
