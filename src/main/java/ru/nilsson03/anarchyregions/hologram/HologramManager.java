@@ -11,7 +11,7 @@ import org.bukkit.event.Listener;
 import eu.decentsoftware.holograms.api.DHAPI;
 import eu.decentsoftware.holograms.api.holograms.Hologram;
 import ru.nilsson03.anarchyregions.AnarchyRegions;
-import ru.nilsson03.anarchyregions.event.RegionCreateEvent;
+import ru.nilsson03.anarchyregions.event.RegionCreatedEvent;
 import ru.nilsson03.anarchyregions.event.RegionDestroyEvent;
 import ru.nilsson03.anarchyregions.event.RegionUpdateEvent;
 import ru.nilsson03.anarchyregions.event.RegionsLoadEvent;
@@ -52,7 +52,7 @@ public class HologramManager implements Listener {
     }
 
     @EventHandler
-    public void onRegionCreate(RegionCreateEvent event) {
+    public void onRegionCreate(RegionCreatedEvent event) {
         Region region = event.getRegion();
 
         try {
@@ -100,7 +100,7 @@ public class HologramManager implements Listener {
 
         if (regionHologram != null) {
             regionHologram.updateHologram(
-                    new ReplaceData("{durability}", new Random().nextInt(100) + 1),
+                    new ReplaceData("{durability}", region.getDurability()),
                     new ReplaceData("{displayName}", regionProperties.getDisplayName()),
                     new ReplaceData("{radius}", String.valueOf(regionProperties.getRadius())),
                     new ReplaceData("{owner}", region.getRegionOwner().toString()));
