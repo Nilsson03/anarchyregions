@@ -61,11 +61,14 @@ public class AnarchyRegions extends NPlugin {
         new HologramManager(this, configFile);
 
         regionStorage = new RegionStorage(this);
+        Bukkit.getPluginManager().registerEvents(regionStorage, this);
 
-        RegionManager regionManager = new RegionManager(regionStorage, configFile);
-        regionUpdateService = new RegionUpdateService(regionManager, configFile);
-        regionManager.setRegionUpdateService(regionUpdateService);
-        Bukkit.getPluginManager().registerEvents(regionManager, this);
+        // Запускать обновление после инициализации regionStorage, дабы подписаться 
+        RegionManager regionManager = new RegionManager(this, configFile, regionStorage); // Тут инициализируется кэш в конструкторе, тоже нужно до стореджа
+        Bukkit.getPluginManager().registerEvents(regionManager, this); 
+        regionUpdateService = new RegionUpdateService(configFile, regionManager);
+        Bukkit.getPluginManager().registerEvents(regionUpdateService, this);
+        regionUpdateService.startGlobalUpdateTask(); 
 
         regionStorage.loadRegions();
         
