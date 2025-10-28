@@ -2,34 +2,37 @@ package ru.nilsson03.anarchyregions.service;
 
 import java.util.UUID;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Queue;
 
 import org.bukkit.Bukkit;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
 import org.bukkit.scheduler.BukkitTask;
 
 import ru.nilsson03.anarchyregions.AnarchyRegions;
+import ru.nilsson03.anarchyregions.event.RegionCreatedEvent;
+import ru.nilsson03.anarchyregions.event.RegionDestroyEvent;
 import ru.nilsson03.anarchyregions.event.RegionUpdateEvent;
+import ru.nilsson03.anarchyregions.event.RegionsLoadEvent;
 import ru.nilsson03.anarchyregions.region.Region;
 import ru.nilsson03.anarchyregions.region.manager.RegionManager;
 import ru.nilsson03.library.bukkit.file.configuration.ParameterFile;
 import ru.nilsson03.library.bukkit.util.log.ConsoleLogger;
 
-/**
- * Оптимизированный сервис для обновления данных регионов с соблюдением принципа единственной ответственности.
- * Использует батчевое обновление для минимизации нагрузки на основной поток.
- */
-public class RegionUpdateService {
+public class RegionUpdateService implements Listener {
     
-    private final RegionManager regionManager;
-    private final Queue<UUID> updateQueue;
+    private final Queue<UUID> updateQueue; // подумать над потенциональной переполненностью очереди
     private final int updateInterval;
     private final int maxUpdatesPerTick;
     private BukkitTask updateTask;
-    
-    public RegionUpdateService(RegionManager regionManager, ParameterFile configFile) {
-        this.regionManager = regionManager;
+
+    private RegionManager regionManager;
+
+    public RegionUpdateService(ParameterFile configFile, RegionManager regionManager) {
         this.updateInterval = configFile.getValueAs("settings.region-update-interval-ticks", Integer.class);
         this.maxUpdatesPerTick = configFile.getValueAs("settings.region-max-updates-per-tick", Integer.class);
+        this.regionManager = regionManager;
         this.updateQueue  = new LinkedList<>();
         
         ConsoleLogger.info("anarchyregions", "RegionUpdateService initialized - interval: %d ticks, max per tick: %d", 
@@ -48,7 +51,7 @@ public class RegionUpdateService {
         ConsoleLogger.debug("anarchyregions", "Added region %s to update queue (total: %d)", regionId, updateQueue.size());
     }
     
-    private void startGlobalUpdateTask() {
+    public void startGlobalUpdateTask() {
         updateTask = Bukkit.getScheduler().runTaskTimer(AnarchyRegions.getInstance(), () -> {
             processBatchUpdates();
         }, 0, updateInterval);
@@ -62,7 +65,7 @@ public class RegionUpdateService {
     }
     
     private void processBatchUpdates() {
-        if (updateQueue .isEmpty()) {
+        if (updateQueue.isEmpty()) {
             return;
         }
         
@@ -73,10 +76,12 @@ public class RegionUpdateService {
         while (processedCount < maxUpdatesPerTick && System.currentTimeMillis() - startTime < 2 && processedCount < queueSize) {
 
             UUID regionId = updateQueue.poll();
-            if (regionId == null) break;
+            if (regionId == null) break; // Если нет региона в очереди, выходим из цикла
             
+            if (!regionManager.regionExists(regionId)) continue; // Если регион не существует, пропускаем
+
             try {
-                Region region = regionManager.getRegionStorage().getRegion(regionId);
+                Region region = regionManager.getRegion(regionId);
 
                 if (region != null) {
                     updateRegionData(region);
@@ -110,5 +115,28 @@ public class RegionUpdateService {
         }
         updateQueue.clear();
         ConsoleLogger.info("anarchyregions", "RegionUpdateService shutdown completed");
+    }
+
+    @EventHandler
+    public void onRegionDestroy(RegionDestroyEvent event) {
+        if (event.isCancelled()) {
+            return;
+        }
+
+        stopRegionUpdates(event.getRegion());
+        ConsoleLogger.info("anarchyregions", "Stopped region updates for region %s", event.getRegion().getRegionId());
+    }
+
+    @EventHandler
+    public void onRegionCreated(RegionCreatedEvent event) {
+        startRegionUpdates(event.getRegion());
+    }
+
+    @EventHandler
+    public void onRegionsLoad(RegionsLoadEvent event) {
+        List<Region> regions = event.getRegions();
+        for (Region region : regions) {
+            startRegionUpdates(region);
+        }
     }
 }
