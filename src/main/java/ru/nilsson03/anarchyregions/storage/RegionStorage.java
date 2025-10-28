@@ -10,9 +10,14 @@ import javax.annotation.Nullable;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
 
 import lombok.Getter;
 import ru.nilsson03.anarchyregions.AnarchyRegions;
+import ru.nilsson03.anarchyregions.event.RegionCreatedEvent;
+import ru.nilsson03.anarchyregions.event.RegionDestroyEvent;
+import ru.nilsson03.anarchyregions.event.RegionPreCreateEvent;
 import ru.nilsson03.anarchyregions.event.RegionsLoadEvent;
 import java.util.ArrayList;
 import ru.nilsson03.anarchyregions.properties.RegionProperties;
@@ -23,7 +28,7 @@ import ru.nilsson03.library.bukkit.file.configuration.BukkitConfig;
 import ru.nilsson03.library.bukkit.util.loc.LocationUtil;
 import ru.nilsson03.library.bukkit.util.log.ConsoleLogger;
 
-public class RegionStorage {
+public class RegionStorage implements Listener {
 
     private final BukkitDirectory regionsDirectory;
     @Getter
@@ -64,6 +69,25 @@ public class RegionStorage {
         }
     }
 
+    @EventHandler
+    public void onRegionDestroy(RegionDestroyEvent event) {
+        Region region = event.getRegion();
+        removeRegion(region);
+    }
+
+    @EventHandler
+    public void onRegionPreCreate(RegionPreCreateEvent event) {
+        if (event.isCancelled()) {
+            return;
+        }
+
+        Location location = event.getLocation();
+        UUID regionOwner = event.getOwner();
+        RegionProperties properties = event.getProperties();
+
+        createRegion(location, regionOwner, properties);
+    }
+
     public void removeRegion(Region region) {
         UUID regionId = region.getRegionId();
         regions.remove(regionId);
@@ -81,6 +105,8 @@ public class RegionStorage {
         Region region = new Region(location, regionOwner, properties);
         regions.put(region.getRegionId(), region);
         ConsoleLogger.debug("anarchyregions", "Created region %s in storage", region.getRegionId().toString());
+        RegionCreatedEvent event = new RegionCreatedEvent(region);
+        Bukkit.getPluginManager().callEvent(event);
         return region;
     }
 
