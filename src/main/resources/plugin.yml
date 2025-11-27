@@ -6,3 +6,7 @@ authors:
   - Nilsson03
 depend:
   - BaseLibrary
+commands:
+  ps:
+    usage: /ps invite <ник> <номер>
+    description: Основная команда плагина
