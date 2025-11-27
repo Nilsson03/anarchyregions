@@ -1,6 +1,8 @@
 package ru.nilsson03.anarchyregions.region;
 
 import java.util.UUID;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -26,6 +28,8 @@ public class Region {
     private final Cuboid regionTerritory;
     private final UUID regionOwner;
     private final Material blockType;
+
+    private final Set<UUID> members = new HashSet<>();
 
     @Setter
     private int durability;
@@ -65,6 +69,18 @@ public class Region {
         this.regionOwner = UUID.fromString(config.getString("owner"));
         this.durability = config.getInt("durability");
         this.blockType = Material.getMaterial(config.getString("block-type"));
+    }
+
+    public Set<UUID> getMembers() {
+        return members;
+    }
+
+    public int getMembersCount() {
+        return members.size();
+    }
+
+    public void addMember(UUID memberUuid) {
+        members.add(memberUuid);
     }
 
     public void decrementDurability() {
