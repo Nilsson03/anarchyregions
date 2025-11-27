@@ -65,8 +65,17 @@ public class RegionStorage implements Listener {
             fileConfiguration.set("owner", region.getRegionOwner().toString());
             fileConfiguration.set("durability", region.getDurability());
             fileConfiguration.set("block-type", region.getBlockType().name());
+            saveRegionMembers(region, fileConfiguration);
             config.saveConfiguration();
         }
+    }
+
+    private void saveRegionMembers(Region region, FileConfiguration configuration) {
+        java.util.List<String> memberStrings = new java.util.ArrayList<>();
+        for (UUID memberUuid : region.getMembers()) {
+            memberStrings.add(memberUuid.toString());
+        }
+        configuration.set("members", memberStrings);
     }
 
     @EventHandler
@@ -117,6 +126,7 @@ public class RegionStorage implements Listener {
         for (BukkitConfig config : regionsDirectory.getCached()) {
             UUID uuid = UUID.fromString(config.getName().replace(".yml", ""));
             Region region = new Region(uuid, config);
+            loadRegionMembers(region, config.getFileConfiguration());
             regions.put(uuid, region);
             loadedRegions.add(region);
         }
@@ -131,6 +141,19 @@ public class RegionStorage implements Listener {
         }
         
         ConsoleLogger.info("anarchyregions", "Loaded %d regions in %dms", regions.size(), System.currentTimeMillis() - startTime);
+    }
+
+    private void loadRegionMembers(Region region, FileConfiguration configuration) {
+        List<String> memberStrings = configuration.getStringList("members");
+        if (memberStrings == null) {
+            return;
+        }
+        for (String member : memberStrings) {
+            try {
+                region.addMember(UUID.fromString(member));
+            } catch (IllegalArgumentException ignored) {
+            }
+        }
     }
 
     @Nullable
