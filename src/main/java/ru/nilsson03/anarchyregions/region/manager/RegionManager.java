@@ -1,14 +1,17 @@
 package ru.nilsson03.anarchyregions.region.manager;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
-import org.jetbrains.annotations.Nullable;
+import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.jetbrains.annotations.Nullable;
 
 import ru.nilsson03.anarchyregions.AnarchyRegions;
 import ru.nilsson03.anarchyregions.event.RegionPreCreateEvent;
+import ru.nilsson03.anarchyregions.event.RequestAcceptedEvent;
 import ru.nilsson03.anarchyregions.properties.RegionProperties;
 import ru.nilsson03.anarchyregions.region.Region;
 import ru.nilsson03.anarchyregions.region.cache.RegionCache;
@@ -21,10 +24,13 @@ public class RegionManager implements Listener {
     private RegionCache regionCache;
     private RegionStorage regionStorage;
 
-    public RegionManager(AnarchyRegions plugin,ParameterFile configFile, RegionStorage regionStorage) {
+    public RegionManager(AnarchyRegions plugin,
+                        ParameterFile configFile, 
+                        RegionStorage regionStorage) {
         this.regionCache = new RegionCache(configFile);
         this.regionStorage = regionStorage;
         Bukkit.getPluginManager().registerEvents(regionCache, plugin);
+        Bukkit.getPluginManager().registerEvents(this, plugin);
     }
 
     public boolean regionExistsInLocation(Location location) {
@@ -45,7 +51,8 @@ public class RegionManager implements Listener {
     public Region getRegionByLocation(Location location) {
         Region foundRegion = regionCache.findRegionsInLocation(location);
         if (foundRegion != null) {
-            ConsoleLogger.debug("anarchyregions", "Found region %s at %s", foundRegion.getRegionId().toString(), location.toString());
+            ConsoleLogger.debug("anarchyregions", "Found region %s at %s", foundRegion.getRegionId().toString(),
+                    location.toString());
             return foundRegion;
         }
         ConsoleLogger.debug("anarchyregions", "No region found at %s, checking storage", location.toString());
@@ -61,25 +68,35 @@ public class RegionManager implements Listener {
         return regionCache.wouldRegionOverlap(centerLocation, radius);
     }
 
-    /**
-     * Получить регион по его ID
-     */
+    public Set<Region> getPlayerRegions(UUID playerUuid) {
+        Map<UUID, Region> regions = regionStorage.getRegions();
+        return regions.values().stream()
+                .filter(region -> region.getRegionOwner().equals(playerUuid))
+                .collect(Collectors.toSet());
+    }
+
     @Nullable
     public Region getRegion(UUID regionId) {
         return regionStorage.getRegion(regionId);
     }
 
-    /**
-     * Проверить существование региона
-     */
     public boolean regionExists(UUID regionId) {
         return regionStorage.getRegion(regionId) != null;
     }
 
-    /**
-     * Получить все регионы
-     */
     public Map<UUID, Region> getAllRegions() {
         return regionStorage.getRegions();
+    }
+
+    @EventHandler
+    public void onRequestAccepted(RequestAcceptedEvent event) {
+        UUID regionId = event.getRegionUUID();
+        Region region = regionStorage.getRegion(regionId);
+        if (region == null) {
+            return;
+        }
+
+        UUID target = event.getTarget();
+        region.addMember(target);
     }
 }
