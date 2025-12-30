@@ -1,7 +1,7 @@
 package ru.nilsson03.anarchyregions.request;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.UUID;
 
 import javax.annotation.Nullable;
@@ -12,11 +12,26 @@ import ru.nilsson03.library.bukkit.file.configuration.ParameterFile;
 
 public class RequestManager {
 
+    private static final int DEFAULT_MAX_PER_PLAYER = 5;
+    private static final int DEFAULT_MAX_TOTAL = 250;
+
     private final int maxRequests;
-    private final List<Request> invites = new ArrayList<>();
+    private final int maxStoredInvites;
+    private final LinkedHashMap<String, Request> invites;
 
     public RequestManager(ParameterFile configFile) {
-        this.maxRequests = configFile.getValueAs("settings.request_max_per_player", Integer.class);
+        Integer configuredMaxPerPlayer = configFile.getValueAs("settings.request_max_per_player", Integer.class);
+        Integer configuredMaxTotal = configFile.getValueAs("settings.request_max_total", Integer.class);
+
+        this.maxRequests = configuredMaxPerPlayer != null ? configuredMaxPerPlayer : DEFAULT_MAX_PER_PLAYER;
+        this.maxStoredInvites = configuredMaxTotal != null ? configuredMaxTotal : DEFAULT_MAX_TOTAL;
+
+        this.invites = new LinkedHashMap<>(32, 0.75f, true) {
+            @Override
+            protected boolean removeEldestEntry(Map.Entry<String, Request> eldest) {
+                return maxStoredInvites > 0 && size() > maxStoredInvites;
+            }
+        };
     }
 
 
@@ -28,11 +43,7 @@ public class RequestManager {
      */
     @Nullable
     public Request findRequest(UUID targetUuid, UUID regionId) {
-        return invites.stream()
-                .filter(invite -> invite.target().equals(targetUuid)
-                        && invite.regionId().equals(regionId))
-                .findFirst()
-                .orElse(null);
+        return invites.get(generateKey(targetUuid, regionId));
     }
 
     /**
@@ -40,7 +51,10 @@ public class RequestManager {
      * @param request
      */
     public void removeRequest(Request request) {
-        invites.remove(request);
+        if (request == null) {
+            return;
+        }
+        invites.remove(generateKey(request.target(), request.regionId()));
     }
 
     /**
@@ -53,7 +67,7 @@ public class RequestManager {
         UUID inviterUuid = inviter.getUniqueId();
         UUID targetUuid = target.getUniqueId();
         Request request = new Request(inviterUuid, targetUuid, regionId);
-        invites.add(request);
+        invites.put(generateKey(targetUuid, regionId), request);
     }
 
     /**
@@ -72,7 +86,12 @@ public class RequestManager {
      * @return количество запросов
      */
     private long getPlayerRequestsCount(UUID playerUuid) {
-        return invites.stream().filter(invite -> invite.inviter().equals(playerUuid))
+        return invites.values().stream()
+                .filter(invite -> invite.inviter().equals(playerUuid))
                 .count();
+    }
+
+    private String generateKey(UUID targetUuid, UUID regionId) {
+        return targetUuid.toString() + ":" + regionId.toString();
     }
 }
