@@ -135,13 +135,16 @@ public class RequestService {
         }
 
         UUID inviter = request.inviter();
-        Player invitPlayer = Bukkit.getPlayer(inviter);
+        Player invitePlayer = Bukkit.getPlayer(inviter);
+
+        boolean invitePlayerIsExist = invitePlayer != null;
 
         UniversalMessenger.send(target, messagesConfig.getString("messages.invite_denied",
-                new ReplaceData("{player}", invitPlayer.getName())));
-        UniversalMessenger.send(invitPlayer, messagesConfig.getString("messages.invite_denied",
+                new ReplaceData("{player}", invitePlayerIsExist ? invitePlayer.getName() : "Offline")));
+        if (invitePlayerIsExist) {
+            UniversalMessenger.send(invitePlayer, messagesConfig.getString("messages.invite_denied",
                 new ReplaceData("{player}", target.getName())));
-
+        }
         requestManager.removeRequest(request);
         return true;
     }
