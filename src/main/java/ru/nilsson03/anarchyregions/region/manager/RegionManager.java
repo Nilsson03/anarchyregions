@@ -40,6 +40,12 @@ public class RegionManager implements Listener {
             return true;
         }
         ConsoleLogger.debug("anarchyregions", "No region found in cache at %s, checking storage", location.toString());
+        Region regionInLocation = regionStorage.getRegion(location);
+        if (regionInLocation != null) {
+            ConsoleLogger.debug("anarchyregions", "Region found in storage at %s", location.toString());
+            regionCache.updateCacheForNewRegion(regionInLocation);
+            return true;
+        }
         return false;
     }
 
