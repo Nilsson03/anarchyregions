@@ -83,6 +83,10 @@ public class Region {
         members.add(memberUuid);
     }
 
+    public boolean isMember(UUID playerUUID) {
+        return members.contains(playerUUID);
+    }
+
     public void decrementDurability() {
         this.durability--;
         ConsoleLogger.debug("anarchyregions", "Durability of region %s decremented to %d", regionId, durability);
